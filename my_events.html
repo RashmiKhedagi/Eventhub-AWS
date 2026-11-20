@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}My events - EventHub{% endblock %}
+{% block body %}
+<div class="between"><h1>Organizer dashboard</h1><a class="btn primary" href="{{ url_for('views.new_event') }}">+ New event</a></div>
+
+<section class="stats">
+  <div class="stat"><span>{{ events|length }}</span><small>Events</small></div>
+  <div class="stat"><span>{{ upcoming }}</span><small>Upcoming</small></div>
+  <div class="stat good"><span>{{ total_confirmed }}</span><small>Registrations</small></div>
+  <div class="stat warn"><span>{{ total_waiting }}</span><small>Waitlisted</small></div>
+  <div class="stat"><span>{{ fill }}%</span><small>Seats filled</small></div>
+</section>
+
+{% if bars %}
+<section class="card">
+  <h2>Seats filled per event</h2>
+  <svg viewBox="0 0 420 {{ bars|length * 30 + 6 }}" class="chart" role="img" aria-label="Seats filled per event">
+    {% for b in bars %}
+    <text class="lbl" x="0" y="{{ 20 + loop.index0 * 30 }}">{{ b.label }}</text>
+    <rect class="track" x="150" y="{{ 8 + loop.index0 * 30 }}" width="200" height="16" rx="8"/>
+    <rect class="bar" x="150" y="{{ 8 + loop.index0 * 30 }}" width="{{ b.pct * 2 }}" height="16" rx="8"/>
+    <text class="lbl" x="360" y="{{ 20 + loop.index0 * 30 }}">{{ b.text }}</text>
+    {% endfor %}
+  </svg>
+</section>
+{% endif %}
+
+<h2 class="spaced">Your events</h2>
+{% for e in events %}
+<article class="row-card">
+  <div>
+    <a class="title" href="{{ url_for('views.event_detail', event_id=e.id) }}">{{ e.title }}</a>
+    <p class="muted">{{ e.starts_at|fmt_dt }} &middot; {{ cnt[e.id].confirmed }}/{{ e.capacity }} registered{% if cnt[e.id].waitlisted %} &middot; {{ cnt[e.id].waitlisted }} waiting{% endif %}
+      {% if e.is_cancelled %}<span class="badge bad">Cancelled</span>{% elif e.is_past %}<span class="badge">Ended</span>{% endif %}</p>
+  </div>
+  <div class="actions">
+    <a class="btn small" href="{{ url_for('views.attendees', event_id=e.id) }}">Attendees</a>
+    <a class="btn small" href="{{ url_for('views.edit_event', event_id=e.id) }}">Edit</a>
+  </div>
+</article>
+{% else %}
+<div class="empty">You have not created any events yet.</div>
+{% endfor %}
+{% endblock %}

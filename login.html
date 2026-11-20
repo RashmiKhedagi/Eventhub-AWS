@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Log in - EventHub{% endblock %}
+{% block body %}
+<div class="narrow">
+  <h1 class="center">Welcome back</h1>
+  {% if error %}<div class="alert">{{ error }}</div>{% endif %}
+  <form method="post" class="card stack">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Email <input type="email" name="email" value="{{ email }}" required autofocus></label>
+    <label>Password <input type="password" name="password" required></label>
+    <button class="btn primary" type="submit">Log in</button>
+  </form>
+  <p class="muted center">New here? <a href="{{ url_for('auth.register', next=request.args.get('next')) }}">Create an account</a></p>
+</div>
+{% endblock %}

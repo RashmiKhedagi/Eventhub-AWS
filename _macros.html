@@ -1,0 +1,2 @@
+{% macro opt(value, label, current) %}<option value="{{ value }}" {{ 'selected' if value == current }}>{{ label }}</option>{% endmacro %}
+{% macro csrf() %}<input type="hidden" name="_csrf" value="{{ csrf_token() }}">{% endmacro %}

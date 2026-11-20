@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Attendees - {{ event.title }}{% endblock %}
+{% block body %}
+<p><a href="{{ url_for('views.event_detail', event_id=event.id) }}">&larr; {{ event.title }}</a></p>
+<div class="between">
+  <h1>Attendees</h1>
+  <a class="btn" href="{{ url_for('views.attendees_csv', event_id=event.id) }}">Export CSV</a>
+</div>
+<section class="stats">
+  <div class="stat good"><span>{{ confirmed }}</span><small>Confirmed</small></div>
+  <div class="stat"><span>{{ checked_in }}</span><small>Checked in</small></div>
+  <div class="stat warn"><span>{{ waiting }}</span><small>Waitlisted</small></div>
+  <div class="stat"><span>{{ event.capacity - confirmed if event.capacity > confirmed else 0 }}</span><small>Seats left</small></div>
+</section>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Name</th><th>Email</th><th>Ticket</th><th>Status</th><th>Check-in</th></tr></thead>
+  <tbody>
+  {% for r in regs %}
+    <tr>
+      <td>{{ r.user.name }}</td>
+      <td>{{ r.user.email }}</td>
+      <td><code>{{ r.ticket_code }}</code></td>
+      <td><span class="badge {{ 'ok' if r.status == 'confirmed' else 'warn' }}">{{ r.status }}</span></td>
+      <td>
+        {% if r.status == 'confirmed' %}
+        <form method="post" action="{{ url_for('views.toggle_checkin', event_id=event.id, reg_id=r.id) }}">
+          {{ csrf() }}<button class="btn small" type="submit">{{ 'Undo' if r.checked_in else 'Check in' }}</button>
+        </form>
+        {% else %}&ndash;{% endif %}
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5" class="muted center">No registrations yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

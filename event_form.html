@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_macros.html" import opt %}
+{% block title %}{{ 'Edit' if event else 'New' }} event - EventHub{% endblock %}
+{% block body %}
+<div class="narrow wide-form">
+  <h1 class="center">{{ 'Edit event' if event else 'Create an event' }}</h1>
+  <form method="post" class="card stack">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Title <input name="title" maxlength="120" value="{{ values.get('title', '') }}" required autofocus>
+      {% if errors.title %}<small class="err">{{ errors.title }}</small>{% endif %}</label>
+    <label>Description <textarea name="description" rows="4" maxlength="2000">{{ values.get('description', '') }}</textarea>
+      {% if errors.description %}<small class="err">{{ errors.description }}</small>{% endif %}</label>
+    <div class="row">
+      <label>Category
+        <select name="category">{% for c in categories %}{{ opt(c, c, values.get('category')) }}{% endfor %}</select>
+        {% if errors.category %}<small class="err">{{ errors.category }}</small>{% endif %}</label>
+      <label>Venue <input name="venue" maxlength="120" value="{{ values.get('venue', '') }}" required>
+        {% if errors.venue %}<small class="err">{{ errors.venue }}</small>{% endif %}</label>
+    </div>
+    <div class="row">
+      <label>Starts <input type="datetime-local" name="starts_at" value="{{ values.get('starts_at', '') }}" required>
+        {% if errors.starts_at %}<small class="err">{{ errors.starts_at }}</small>{% endif %}</label>
+      <label>Ends (optional) <input type="datetime-local" name="ends_at" value="{{ values.get('ends_at', '') }}">
+        {% if errors.ends_at %}<small class="err">{{ errors.ends_at }}</small>{% endif %}</label>
+    </div>
+    <div class="row">
+      <label>Capacity (seats) <input type="number" name="capacity" min="1" max="100000" value="{{ values.get('capacity', '') }}" required>
+        {% if errors.capacity %}<small class="err">{{ errors.capacity }}</small>{% endif %}</label>
+      <label>Price in &#8377; (0 = free) <input type="number" name="price" min="0" max="100000" value="{{ values.get('price', '0') }}">
+        {% if errors.price %}<small class="err">{{ errors.price }}</small>{% endif %}</label>
+    </div>
+    <div class="row end">
+      <a class="btn" href="{{ url_for('views.event_detail', event_id=event.id) if event else url_for('views.index') }}">Cancel</a>
+      <button class="btn primary" type="submit">{{ 'Save changes' if event else 'Create event' }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

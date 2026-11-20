@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}My tickets - EventHub{% endblock %}
+{% block body %}
+<h1>My tickets</h1>
+{% for reg, e in rows %}
+<article class="row-card">
+  <div>
+    <a class="title" href="{{ url_for('views.event_detail', event_id=e.id) }}">{{ e.title }}</a>
+    <p class="muted">{{ e.starts_at|fmt_dt }} &middot; {{ e.venue }}</p>
+  </div>
+  <div class="right">
+    {% if reg.status == 'confirmed' %}<span class="badge ok">Confirmed</span><strong class="code">{{ reg.ticket_code }}</strong>
+    {% else %}<span class="badge warn">Waitlisted</span>{% endif %}
+    {% if e.is_cancelled %}<span class="badge bad">Event cancelled</span>{% elif e.is_past %}<span class="badge">Ended</span>{% endif %}
+    {% if reg.checked_in %}<span class="badge ok">Checked in</span>{% endif %}
+  </div>
+</article>
+{% else %}
+<div class="empty">You have no tickets yet. <a href="{{ url_for('views.index') }}">Browse events</a>.</div>
+{% endfor %}
+{% endblock %}

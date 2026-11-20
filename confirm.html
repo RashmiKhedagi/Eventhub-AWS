@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ title }} - EventHub{% endblock %}
+{% block body %}
+<div class="narrow">
+  <form method="post" class="card stack">
+    {{ csrf() }}
+    <h2>{{ title }}</h2>
+    <p><strong>{{ subject }}</strong></p>
+    <p class="muted">{{ message }}</p>
+    <div class="row end">
+      <a class="btn" href="{{ back }}">Go back</a>
+      <button class="btn primary danger-bg" type="submit">{{ button }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

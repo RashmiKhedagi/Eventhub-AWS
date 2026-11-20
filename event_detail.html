@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ event.title }} - EventHub{% endblock %}
+{% block body %}
+{% set left = event.capacity - cnt.confirmed %}
+<div class="detail">
+  <section class="card">
+    <div class="tags">
+      <span class="badge">{{ event.category }}</span>
+      {% if event.is_cancelled %}<span class="badge bad">Cancelled</span>{% elif event.is_past %}<span class="badge">Ended</span>{% endif %}
+    </div>
+    <h1>{{ event.title }}</h1>
+    <dl class="info">
+      <dt>When</dt><dd>{{ event.starts_at|fmt_dt }}{% if event.ends_at %} &ndash; {{ event.ends_at|fmt_dt }}{% endif %}</dd>
+      <dt>Where</dt><dd>{{ event.venue }}</dd>
+      <dt>Price</dt><dd>{{ event.price|money }}</dd>
+      <dt>Organizer</dt><dd>{{ event.organizer.name }}</dd>
+    </dl>
+    {% if event.description %}<p class="desc">{{ event.description }}</p>{% endif %}
+
+    {% if is_owner %}
+    <div class="owner">
+      <strong>Organizer tools</strong>
+      <div class="actions">
+        <a class="btn small" href="{{ url_for('views.attendees', event_id=event.id) }}">Attendees</a>
+        <a class="btn small" href="{{ url_for('views.edit_event', event_id=event.id) }}">Edit</a>
+        {% if not event.is_cancelled %}<a class="btn small" href="{{ url_for('views.cancel_event', event_id=event.id) }}">Cancel event</a>{% endif %}
+        <a class="btn small danger" href="{{ url_for('views.delete_event', event_id=event.id) }}">Delete</a>
+      </div>
+    </div>
+    {% endif %}
+  </section>
+
+  <aside class="card stack">
+    <h2>Registration</h2>
+    <progress value="{{ cnt.confirmed }}" max="{{ event.capacity }}"></progress>
+    <p class="muted">{{ cnt.confirmed }} of {{ event.capacity }} seats taken{% if cnt.waitlisted %} &middot; {{ cnt.waitlisted }} on waitlist{% endif %}</p>
+
+    {% if event.is_cancelled %}
+      <div class="alert">This event has been cancelled by the organizer.</div>
+    {% elif event.is_past %}
+      <p class="muted">This event has ended.</p>
+    {% elif not current_user.is_authenticated %}
+      <a class="btn primary" href="{{ url_for('auth.login', next=url_for('views.event_detail', event_id=event.id)) }}">Log in to register</a>
+    {% elif my_reg and my_reg.status == 'confirmed' %}
+      <div class="ticket">
+        <small class="muted">Your ticket code</small>
+        <strong class="code">{{ my_reg.ticket_code }}</strong>
+        {% if my_reg.checked_in %}<span class="badge ok">Checked in</span>{% else %}<span class="badge ok">Confirmed</span>{% endif %}
+      </div>
+      <form method="post" action="{{ url_for('views.unregister_event', event_id=event.id) }}">
+        {{ csrf() }}<button class="btn danger" type="submit">Cancel my registration</button>
+      </form>
+    {% elif my_reg and my_reg.status == 'waitlisted' %}
+      <div class="ticket"><strong>Waitlisted</strong><small class="muted">Your position: #{{ position }}. You will be confirmed automatically if a seat opens.</small></div>
+      <form method="post" action="{{ url_for('views.unregister_event', event_id=event.id) }}">
+        {{ csrf() }}<button class="btn danger" type="submit">Leave waitlist</button>
+      </form>
+    {% else %}
+      <form method="post" action="{{ url_for('views.register_event', event_id=event.id) }}">
+        {{ csrf() }}
+        <button class="btn primary wide" type="submit">{{ 'Register' if left > 0 else 'Join waitlist' }}</button>
+      </form>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

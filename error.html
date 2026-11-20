@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ err.code }} - EventHub{% endblock %}
+{% block body %}
+<div class="narrow center">
+  <h1>{{ err.code }}</h1>
+  <p class="muted">{{ err.description or err.name }}</p>
+  <a class="btn primary" href="{{ url_for('views.index') }}">Back to events</a>
+</div>
+{% endblock %}

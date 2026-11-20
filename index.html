@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "_macros.html" import opt %}
+{% block body %}
+<section class="hero">
+  <h1>Discover &amp; join events</h1>
+  <p class="muted">Workshops, fests, talks and tournaments. Register in one click, get your ticket code.</p>
+</section>
+
+<form method="get" class="toolbar">
+  <input type="search" name="q" value="{{ filters.get('q', '') }}" placeholder="Search events or venues">
+  <select name="category">
+    {{ opt('', 'All categories', filters.get('category', '')) }}
+    {% for c in categories %}{{ opt(c, c, filters.get('category')) }}{% endfor %}
+  </select>
+  <select name="when">
+    {{ opt('upcoming', 'Upcoming', filters.get('when', 'upcoming')) }}
+    {{ opt('past', 'Past', filters.get('when')) }}
+    {{ opt('all', 'All', filters.get('when')) }}
+  </select>
+  <label class="check"><input type="checkbox" name="free" value="1" {{ 'checked' if filters.get('free') }}> Free only</label>
+  <button class="btn primary" type="submit">Search</button>
+  <a class="btn" href="{{ url_for('views.index') }}">Reset</a>
+</form>
+
+<section class="grid">
+  {% for e in result.items %}
+  {% set c = cnt[e.id] %}
+  {% set left = e.capacity - c.confirmed %}
+  <article class="ecard">
+    <div class="tags">
+      <span class="badge">{{ e.category }}</span>
+      {% if e.is_cancelled %}<span class="badge bad">Cancelled</span>
+      {% elif e.is_past %}<span class="badge">Ended</span>
+      {% elif left <= 0 %}<span class="badge warn">Full</span>{% endif %}
+    </div>
+    <h3><a href="{{ url_for('views.event_detail', event_id=e.id) }}">{{ e.title }}</a></h3>
+    <p class="muted">{{ e.starts_at|fmt_dt }}</p>
+    <p class="muted">{{ e.venue }}</p>
+    <progress value="{{ c.confirmed }}" max="{{ e.capacity }}"></progress>
+    <div class="between">
+      <small class="muted">{% if left > 0 %}{{ left }} seats left{% else %}Full &middot; {{ c.waitlisted }} waiting{% endif %}</small>
+      <strong>{{ e.price|money }}</strong>
+    </div>
+  </article>
+  {% else %}
+  <div class="empty">No events found. Try different filters or <a href="{{ url_for('views.new_event') }}">create one</a>.</div>
+  {% endfor %}
+</section>
+
+<nav class="pager">
+  {% if result.has_prev %}<a class="btn" href="{{ url_for('views.index', page=result.prev_num, **filters) }}">Previous</a>{% else %}<span class="btn disabled">Previous</span>{% endif %}
+  <span class="muted">Page {{ result.page }} of {{ result.pages or 1 }}</span>
+  {% if result.has_next %}<a class="btn" href="{{ url_for('views.index', page=result.next_num, **filters) }}">Next</a>{% else %}<span class="btn disabled">Next</span>{% endif %}
+</nav>
+{% endblock %}
